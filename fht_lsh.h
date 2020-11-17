@@ -314,6 +314,7 @@ class ProductLSH
             codesize *= codesizes[i];
             if (i>0) codesize *= 2;
         }
+        assert(codesize <= _codesize);
         };
 
     // Hash. Given a vector v as input, hash it against the subcodes and produce the results, stored in res. 
