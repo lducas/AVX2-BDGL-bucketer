@@ -1,25 +1,5 @@
 #include "fht_lsh.h"
 
-/* m256d_hadamard8_ps.
- * This function computes a Hadamard transform on a vector of 8 single precision floats
- */
-inline __m256 m256d_hadamard8_ps(const __m256& x1)
-{
-    __m256 tmp, res = x1;
-
-    // Note that here we use a 64-bit permutation and operate on res
-    // as if it's full of ints - no harm. We do this as an explicit reinterpret_cast.
-    tmp = (__m256) _mm256_permute4x64_epi64(reinterpret_cast<__m256i>(res), 0b01001110);
-    // Negate the first 4 floats of res, add to temp & put back in res
-    res = _mm256_fmadd_ps(res, _mm256_set_ps(-1,-1,-1,-1,1,1,1,1), tmp);
-    // Then negate the even components and add, repeat and then done
-    tmp = _mm256_mul_ps(res, _mm256_set_ps(-1,1,-1,1,-1,1,-1,1));
-    res = _mm256_hadd_ps(tmp, res);
-    tmp = _mm256_mul_ps(res, _mm256_set_ps(-1,1,-1,1,-1,1,-1,1));
-    res = _mm256_hadd_ps(tmp, res);
-    return res;
-}
-
 
 /*
  * m256_hadamard16_epi16. This function applies the Hadamard transformation
@@ -580,56 +560,10 @@ void ProductLSH::hash(const float * const v, int32_t * const res)
 {
     // Firstly we apply the permutation - we apply the same permutation to every input vector.
     // The sign and permutation vectors are built in the constructor for this class.
-    float vv[n], tmp[n];
+    float vv[n];
     for (size_t i = 0; i < n; ++i) 
     {
         vv[i] = sign[i] * v[permutation[i]];
-    }
-
-
-    // Now we perform the pre-Hadamard rounds. 
-    // You can think of this as applying another set of permutations to the input.
-    // This code consists of fast, floating point Hadamard code. 
-    for (int iter = 0; iter < pre_hadamards; ++iter)
-    {
-	// For all but the last 8 floats, apply the fp Hadamard and store it in the tmp array 
-        unsigned i = 0;
-        for (; i+7 < n; i+=8)
-        {
-            __m256 x = _mm256_loadu_ps(&vv[i]);
-            x = m256d_hadamard8_ps(x);
-            _mm256_storeu_ps(&tmp[i], x);
-        }
-
-	
-	// Normalise the last 8 floats
-        for (; i < n; ++i)
-        {
-            tmp[i] = vv[i] * 2.82842712474619; // sqrt(8.);
-        }
-
-	
-	// Now normalize all of Hadamard'd components
-        i = 0;
-        for (; i < n-8; ++i)
-        {
-            tmp[i] = tmp[i] * 2.82842712474619; // sqrt(8.);
-        }
-
-
-	// And finally apply the Hadamard transform to the last 8 floats
-        __m256 x = _mm256_loadu_ps(&tmp[i]);
-        x = m256d_hadamard8_ps(x);
-        _mm256_storeu_ps(&tmp[i], x);
-
-
-
-
-	// Now renormalize the components, applying the permutation as we go
-        for (size_t i = 0; i < n; ++i) 
-        {
-            vv[i] = .125 * sign[i] * tmp[permutation[i]];
-        }        
     }
 
     // With all of the permutations done, we apply the multi_block hash. 

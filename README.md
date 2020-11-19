@@ -36,13 +36,13 @@ The main class is `ProductLSH`
 
 Initialization:
 ``` C++
-lsh = ProductLSH(n, b, C, M, seed, pre_hadamards);
+lsh = ProductLSH(n, b, C, M, seed);
 ```
 - `n` is the dimension of the space
 - `b` is the number of ``blocks''
 - `C` is the *desired* number of buckets (i.e. possible value for the hash function). Due to block constraint C = 2^(b-1) * C_1 * C_2 * ... * C_b, the actual number of buckets may be somewhat lower. Actual value accessible via `lsh.codesize'
 - `M` is the number of desired output hashvalues.
-- `pre_hadamards` enable random rotation before splitting the input vector into blocks by repeating random permutations and 8-way Hadamard transforms. Defaults to 0. Activate it if you expect some input coordinates to have significantly more variance than other (recommended value is 1 or 2). 
+- `seed` for controlled pseudo-randomness.
 
 The class provides a single function:
 ``` C++

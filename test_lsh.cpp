@@ -30,6 +30,7 @@ void sample_spherical(int N, float *tab)
   }
   norm = 1/sqrt(norm);
 
+//  tab[0] *= 10;
   for (int i = 0; i < N; ++i) 
   {
     tab[i] *= -norm;
@@ -97,7 +98,7 @@ int main() {
         int64_t buckets = M * pow(2,  .2015 *N);
         int64_t references = (1 << 14);
 
-        ProductLSH lsh(N, X, buckets, M, 1, 4);
+        ProductLSH lsh(N, X, buckets, M, 1);
         // actually consider the true number of buckets
         buckets = lsh.codesize;
 
