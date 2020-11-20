@@ -120,7 +120,7 @@ int main() {
 
           for (int j = 0; j < M; ++j)
           {
-            int hh = abs(h[j]) - 1;
+            int hh = h[j];
             assert(hh >= 0);
             assert(hh < buckets);
 
@@ -139,7 +139,7 @@ int main() {
 
           for (int j = 0; j < M; ++j)
           {
-            int hh = abs(h[j]) - 1;
+            int hh = h[j];
             assert(hh >= 0);
             assert(hh < buckets);
             for (int k : buck[hh])

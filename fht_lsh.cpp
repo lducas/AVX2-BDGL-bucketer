@@ -256,8 +256,8 @@ inline void FastHadamardLSH::insert_in_maxs_epi16(int32_t * const maxs, const in
  * hash_templated. This is the hash function for the 
  * FastHadamardLSH code that we're operating on. 
  * @param v - a pointer to the vector which is hashed
- * @param res - a pointer to receive the multihash many (coefficient, hashes) pairs
-    (pairs are written next to each other in this array of size 2*multihash)
+ * @param res - a pointer to receive the multi_hash many (coefficient, hashes) pairs
+    (pairs are written next to each other in this array of size 2*multi_hash)
  */
 template<int regs_>
 void FastHadamardLSH::hash_templated(const int16_t * const vv, int32_t * const res)
@@ -320,8 +320,8 @@ void FastHadamardLSH::hash_templated(const int16_t * const vv, int32_t * const r
  * Note that this function is separate from the different "hash_templated" functions - that's
  * because we apply some normalisation and safety checks first.
  * @param v - a pointer to the vector which is hashed
- * @param coeff - a pointer to receive the multihash many coefficient of the selected hash values
- * @param hashes - a pointer to receive the multihash many hash values
+ * @param coeff - a pointer to receive the multi_hash many coefficient of the selected hash values
+ * @param hashes - a pointer to receive the multi_hash many hash values
  */
 void FastHadamardLSH::hash(const float * const v, float * const coeff, int32_t * const hashes)
 {
@@ -553,7 +553,7 @@ template<> void ProductLSH::hash_templated<1>(const float * const vv, int32_t * 
 /**
  * hash. Accepts a vector, v, and hashes it against all of the relevant subcodes.
  * @param v - a pointer to the vector which is hashed
- * @param res - a pointer to receive the multihash many hash values
+ * @param res - a pointer to receive the multi_hash many hash values
  */
 
 void ProductLSH::hash(const float * const v, int32_t * const res)
@@ -566,11 +566,20 @@ void ProductLSH::hash(const float * const v, int32_t * const res)
         vv[i] = sign[i] * v[permutation[i]];
     }
 
+    for (size_t i = 0; i < multi_hash; ++i)
+    {
+        res[i] = 1;
+    }
+
     // With all of the permutations done, we apply the multi_block hash. 
     // Note that right now we've only got support for between 1-3 blocks.
-    if      (blocks==1)  { return hash_templated<1>(vv, res); }
-    else if (blocks==2)  { return hash_templated<2>(vv, res); }
-    else if (blocks==3)  { return hash_templated<3>(vv, res); }
+    if      (blocks==1)  {hash_templated<1>(vv, res); }
+    else if (blocks==2)  {hash_templated<2>(vv, res); }
+    else if (blocks==3)  {hash_templated<3>(vv, res); }
+    else {throw std::invalid_argument( "not implemented" );}
+    for (size_t i = 0; i < multi_hash; ++i)
+    {
+        res[i] = abs(res[i]) - 1;
+    }
 
-    throw std::invalid_argument( "not implemented" );
 }
