@@ -7,6 +7,10 @@ Contributors:
 - Wessel van Woerden
 - Joe Rowell
 
+Acknowledgments
+
+This work was supported in part by the European Union Horizon 2020 Research and Innovation Program Grant 780701 (PROMETHEUS) and by the ERC Advanced Grant 740972 (ALGSTRONGCRYPTO).
+
 ### Disclaimer
 
 This is not pretty code. 
